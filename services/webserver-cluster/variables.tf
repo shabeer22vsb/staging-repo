@@ -24,3 +24,4 @@ variable "min_size"{
 variable "max_size"{
     description = "number of minimum instances in ASG"
 }
+

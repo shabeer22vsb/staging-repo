@@ -9,4 +9,5 @@ module "webserver-cluster" {
   instance_type = "t3.large"
   max_size = 2
   min_size = 1
+  enable_scaling_policy = false
 }     
