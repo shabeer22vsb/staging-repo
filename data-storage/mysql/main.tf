@@ -1,10 +1,4 @@
 terraform {
-  required_providers {
-    aws = {
-      source = "hashicorp/aws"
-      version = "~> 6.50"
-    }
-  }
   backend "s3" {
     bucket       = "my-tf-practical-bucket-166373406634-eu-west-1-an"
     key          = "stage/data-stores/mysql/terraform.tfstate"
@@ -33,6 +27,8 @@ locals {
 }
 module "data-storage-ireland"{
   source = "github.com/shabeer22vsb/modules//services/data-storage"
+  db_name = "prod-db"
+  backup_retention_period = 1
   db_password = local.db_creds.password
   db_username = local.db_creds.username
   db_instance_class = var.db_instance_class
@@ -40,6 +36,13 @@ module "data-storage-ireland"{
   skip_final_snapshot = var.skip_final_snapshot
   providers = {
     aws = aws.ireland
+  }
+}
+module "data-storage-ireland-replica" {
+  source = "github.com/shabeer22vsb/modules//services/data-storage"
+  replicate_source_db = module.data-storage-ireland.arn
+  providers = {
+    aws = aws.london
   }
 }
 module "data-storage-london"{
