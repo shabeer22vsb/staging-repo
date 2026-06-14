@@ -1,16 +1,21 @@
 provider "aws" {
     region = "eu-west-1"
 }
-resource "aws_db_instance" "example" {
-  identifier_prefix = "terraform-up-and-running"
-  engine = "mysql"
-  allocated_storage = 10
-  instance_class = "db.t3.micro"
-  skip_final_snapshot = true
-  db_name = "example_database"
-
-  username = var.db_username
-  password = var.db_password
+data "aws_secretsmanager_secret_version" "db-creds" {
+  secret_id = "db-creds"
+}
+locals {
+  db_creds=jsondecode(
+    data.aws_secretsmanager_secret_version.db-creds.secret_string
+  )
+}
+module "data-storage"{
+  source = "../../../modules/services/data-storage"
+  db_password = local.db_creds.password
+  db_username = local.db_creds.username
+  db_instance_class = var.db_instance_class
+  allocated_storage = var.allocated_storage
+  skip_final_snapshot = var.skip_final_snapshot
 }
 terraform {
   backend "s3" {
